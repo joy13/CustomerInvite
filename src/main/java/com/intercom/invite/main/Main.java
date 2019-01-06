@@ -10,7 +10,7 @@ public class Main {
         InvitationService invitationService = new InvitationService(distanceService);
         List<Customer> invitedCustomers = invitationService.getCustomersToInvite("customers.txt");
         for (Customer invitedCustomer : invitedCustomers) {
-            System.out.println("UserId: " + invitedCustomer.getUserId() + " name: " + invitedCustomer.getName());
+            System.out.println("user_id: " + invitedCustomer.getUserId() + " name: " + invitedCustomer.getName());
         }
     }
 }

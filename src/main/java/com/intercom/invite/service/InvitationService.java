@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import com.intercom.invite.Utility;
 import java.util.Collections;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
 
 public class InvitationService {
     
@@ -48,10 +49,16 @@ public class InvitationService {
     private List<Customer> getCustomerList(String filename) {
         List<Customer> customers = new ArrayList<>();
         List<String> lines = Utility.readFile(filename);
-        lines.forEach(line -> {
-            Customer customer = mapper.readValue(line, Customer.class);
-            customers.add(customer);
-        });
+        try {
+            for(String line: lines) {
+                Customer customer = mapper.readValue(line, Customer.class);
+                customers.add(customer);
+            } 
+        } catch(IOException ex) {
+            System.out.println("Error reading JSON to object"); 
+            ex.printStackTrace();
+        }
+
         return customers;
     }
 }
