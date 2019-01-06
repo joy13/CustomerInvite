@@ -23,21 +23,34 @@ public class InvitationService {
         this.distanceService = distanceService;
     }
     
-    /**
-     * Filters an input list of customers to return a subset of customers within 100 km of Intercom's Dublin office.
-     */
     public List<Customer> getCustomersToInvite(String filename) {
-        List<Customer> customers = getCustomerList(filename);
+        List<Customer> invitedCustomers = filterCustomers(getCustomerList(filename));
+        return invitedCustomers;
+    }
+    
+    /**
+     * Filters an input list of customers to return a subset of customers 
+     * within 100 km of Intercom's Dublin office, sorted by User ID.
+     */
+    public List<Customer> filterCustomers(List<Customer> customers) {
         List<Customer> invitedCustomers = new ArrayList<>();
         Point officeLocation = new Point(OFFICE_LATTITUDE, OFFICE_LONGITUDE);
+        if(customers.isEmpty()) {
+            // Ideally should use custom exceptions for specific errors.
+            throw new RuntimeException("Customer list is empty!");
+        }
         customers.forEach(customer -> {
-            Point customerLocation = new Point(Double.parseDouble(customer.getLatitude()), Double.parseDouble(customer.getLongitude()));
-            double distance = distanceService.getDistanceInKilometer(officeLocation, customerLocation);
-            if(distance <= INVITE_DISTANCE_KM) {
-                invitedCustomers.add(customer);
+            if (customer.getLatitude() != null && customer.getLongitude() != null) {
+                Point customerLocation = new Point(Double.parseDouble(customer.getLatitude()), Double.parseDouble(customer.getLongitude()));
+                double distance = distanceService.getDistanceInKilometer(officeLocation, customerLocation);
+                if(distance <= INVITE_DISTANCE_KM) {
+                    invitedCustomers.add(customer);
+                }
+            } else {
+                // Ideally should use custom exceptions for specific errors.
+                throw new RuntimeException("Latitude or Longitude is null for userId: " + customer.getUserId());
             }
         });
-        
         //Now sort based on userId
         Collections.sort(
                 invitedCustomers,
@@ -46,6 +59,9 @@ public class InvitationService {
         return invitedCustomers;
     }
     
+    /**
+     * Helper method to deserialize JSON into Customer objects.
+     */
     private List<Customer> getCustomerList(String filename) {
         List<Customer> customers = new ArrayList<>();
         List<String> lines = Utility.readFile(filename);
